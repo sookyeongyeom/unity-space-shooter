@@ -30,6 +30,7 @@ public class MonsterCtrl : MonoBehaviour
     private Transform monsterTr;
     private Transform playerTr;
     private NavMeshAgent agent;
+    private Animator anim;
 
     void Start()
     {
@@ -41,6 +42,9 @@ public class MonsterCtrl : MonoBehaviour
         // NavMeshAgent 컴포넌트 할당
         agent = GetComponent<NavMeshAgent>();
 
+        // Animator 컴포넌트 할당
+        anim = GetComponent<Animator>();
+
         // 추적 대상의 위치를 설정하면 바로 추적 시작
         agent.destination = playerTr.position;
         // 또는 이렇게
@@ -48,6 +52,8 @@ public class MonsterCtrl : MonoBehaviour
 
         // 몬스터의 상태를 체크하는 코루틴 함수 호출
         StartCoroutine(CheckMonsterState());
+        // 상태에 따라 몬스터의 행동을 수행하는 코루틴 함수 호출
+        StartCoroutine(MonsterAction());
     }
 
     void Update()
@@ -82,8 +88,44 @@ public class MonsterCtrl : MonoBehaviour
         }
     }
 
+    // 몬스터의 상태에 따라 몬스터의 동작을 수행
+    IEnumerator MonsterAction()
+    {
+        while (!isDie)
+        {
+            switch (state)
+            {
+                // IDLE 상태
+                case State.IDLE:
+                    agent.isStopped = true;
+                    // Animator의 IsTrace 변수를 false로 설정
+                    anim.SetBool("IsTrace", false);
+                    break;
+
+                // 추적 상태
+                case State.TRACE:
+                    // 추적 대상의 좌표로 이동 시작
+                    agent.SetDestination(playerTr.position);
+                    agent.isStopped = false;
+                    // Animator의 IsTrace 변수를 true로 설정
+                    anim.SetBool("IsTrace", true);
+                    break;
+
+                // 공격 상태
+                case State.ATTACK:
+                    break;
+
+                // 사망
+                case State.DIE:
+                    break;
+            }
+            yield return new WaitForSeconds(0.3f);
+        }
+    }
+
     private void OnDrawGizmos()
     {
+        // 추적 사정거리 표시
         if (state == State.TRACE)
         {
             Gizmos.color = Color.blue;
