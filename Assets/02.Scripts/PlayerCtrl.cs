@@ -14,6 +14,11 @@ public class PlayerCtrl : MonoBehaviour
     // 회전 속도 변수
     public float turnSpeed = 80.0f;
 
+    // 초기 생명 값
+    private readonly float initHp = 100.0f;
+    // 현재 생명 값
+    public float currHp = 100.0f;
+
     // Start is called before the first frame update
     IEnumerator Start()
     {
@@ -93,6 +98,41 @@ public class PlayerCtrl : MonoBehaviour
         else
         {
             anim.CrossFade("Idle", 0.25f);  // 정지 시 Idle
+        }
+    }
+
+    // 충돌한 Collider의 IsTrigger 옵션이 체크됐을 때 발생
+    private void OnTriggerEnter(Collider coll)
+    {
+        if (currHp >= 0.0f && coll.CompareTag("PUNCH"))
+        {
+            if (currHp > 0.0f)
+            {
+                currHp -= 10.0f;
+                Debug.Log($"Player HP = {currHp / initHp}");
+            }
+            else
+            {
+                return;
+            }
+
+            if (currHp <= 0.0f)
+            {
+                PlayerDie();
+            }
+        }
+    }
+
+    void PlayerDie()
+    {
+        Debug.Log("Player Die !");
+
+        // MONSTER 태그를 가진 모든 게임오브젝트를 찾아옴
+        GameObject[] monsters = GameObject.FindGameObjectsWithTag("MONSTER");
+
+        foreach (GameObject monster in monsters)
+        {
+            monster.SendMessage("OnPlayerDie", SendMessageOptions.DontRequireReceiver);
         }
     }
 }
