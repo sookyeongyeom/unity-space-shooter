@@ -38,9 +38,27 @@ public class MonsterCtrl : MonoBehaviour
     private readonly int hashHit = Animator.StringToHash("Hit");
     private readonly int hashPlayerDie = Animator.StringToHash("PlayerDie");
     private readonly int hashSpeed = Animator.StringToHash("Speed");
+    private readonly int hashDie = Animator.StringToHash("Die");
 
     // 혈흔 효과 프리팹
     private GameObject bloodEffect;
+
+    // 몬스터 생명 변수
+    private int hp = 100;
+
+    // 스크립트가 활성화될 때마다 호출되는 함수
+    private void OnEnable()
+    {
+        // 이벤트 발생 시 수행할 함수 연결
+        PlayerCtrl.OnPlayerDie += this.OnPlayerDie;
+    }
+
+    // 스크립트가 비활성화될 때마다 호출되는 함수
+    private void OnDisable()
+    {
+        // 기존에 연결된 함수 해제
+        PlayerCtrl.OnPlayerDie -= this.OnPlayerDie;
+    }
 
     void Start()
     {
@@ -81,6 +99,9 @@ public class MonsterCtrl : MonoBehaviour
             // 0.3초 동안 중지(대기)하는 동안 제어권을 메시지 루프에 양보
             yield return new WaitForSeconds(0.3f);
 
+            // 몬스터의 상태가 DIE일 때 코루틴을 종료
+            if (state == State.DIE) yield break;
+
             // 몬스터와 주인공 캐릭터 사이의 거리 측정
             float distance = Vector3.Distance(playerTr.position, monsterTr.position);
 
@@ -110,6 +131,7 @@ public class MonsterCtrl : MonoBehaviour
             {
                 // IDLE 상태
                 case State.IDLE:
+                    // 추적 중지
                     agent.isStopped = true;
 
                     // Animator의 IsTrace 변수를 false로 설정
@@ -139,6 +161,13 @@ public class MonsterCtrl : MonoBehaviour
 
                 // 사망
                 case State.DIE:
+                    isDie = true;
+                    // 추적 정지
+                    agent.isStopped = true;
+                    // 사망 애니메이션 실행
+                    anim.SetTrigger(hashDie);
+                    // 몬스터의 Collider 컴포넌트 비활성화
+                    GetComponent<CapsuleCollider>().enabled = false;
                     break;
             }
             yield return new WaitForSeconds(0.3f);
@@ -160,6 +189,15 @@ public class MonsterCtrl : MonoBehaviour
             Quaternion rot = Quaternion.LookRotation(-coll.GetContact(0).normal);
             // 혈흔 효과를 생성하는 함수 호출
             ShowBloodEffect(pos, rot);
+
+            // 몬스터의 hp 차감
+            hp -= 10;
+            Debug.Log($"Monster HP = {hp}");
+            if (hp <= 0)
+            {
+                state = State.DIE;
+                Debug.Log("Monster Die !");
+            }
         }
     }
 
