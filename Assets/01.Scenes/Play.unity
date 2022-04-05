@@ -742,7 +742,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   points: []
-  monster: {fileID: 0}
+  monsterPool: []
+  maxMonsters: 10
+  monster: {fileID: 1580613664551869243, guid: d238a6b6af84c124d9888a7e44929471, type: 3}
   createTime: 3
 --- !u!4 &553146673
 Transform:
