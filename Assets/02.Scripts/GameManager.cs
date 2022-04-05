@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 public class GameManager : MonoBehaviour
 {
@@ -42,6 +43,13 @@ public class GameManager : MonoBehaviour
     // 싱글턴 인스턴스 선언
     public static GameManager instance = null;
 
+    // 스코어 텍스트를 연결할 변수
+    public TMP_Text scoreText;
+    // 누적 점수를 기록하기 위한 변수
+    private int totScore = 0;
+
+    // 누적 점수를 기록하기 위한 변수
+
     // 스크립트가 실행되면 가장 먼저 호출되는 유니티 이벤트 함수
     private void Awake()
     {
@@ -78,6 +86,9 @@ public class GameManager : MonoBehaviour
 
         // 일정한 시간 간격으로 함수를 호출 ("호출할 함수", 대기_시간, 호출_간격)
         InvokeRepeating("CreateMonster", 2.0f, createTime);
+
+        // 스코어 점수 출력
+        DisplayScore(0);
     }
 
     void Update()
@@ -131,5 +142,12 @@ public class GameManager : MonoBehaviour
         }
 
         return null;
+    }
+
+    // 점수를 누적하고 출력하는 함수
+    public void DisplayScore(int score)
+    {
+        totScore += score;
+        scoreText.text = $"<color=#00ff00>SCORE</color>         <color=#ff0000>{totScore:00,000}</color>";
     }
 }
